@@ -3,10 +3,12 @@
 namespace Icod.Collections.Immutable {
 
 	[System.Serializable]
+	[System.Diagnostics.DebuggerDisplay( "Queue = {Count}" )]
 	public sealed class Queue<T> : IQueue<T> {
 
 		#region nested classes
 		[System.Serializable]
+		[System.Diagnostics.DebuggerDisplay( "Queue = {Count}" )]
 		private sealed class EmptyQueue : IQueue<T> {
 			private static readonly System.Int32 theHashCode;
 			static EmptyQueue() {
@@ -62,6 +64,7 @@ namespace Icod.Collections.Immutable {
 		}
 
 		[System.Serializable]
+		[System.Diagnostics.DebuggerDisplay( "Queue = {Count}" )]
 		private sealed class SingleQueue : IQueue<T> {
 			private static readonly System.Int32 theHashCode;
 			private readonly T myValue;

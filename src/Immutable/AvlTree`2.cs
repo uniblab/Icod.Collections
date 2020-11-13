@@ -5,10 +5,12 @@ using System.Linq;
 namespace Icod.Collections.Immutable {
 
 	[System.Serializable]
+	[System.Diagnostics.DebuggerDisplay( "AvlTree = {Key}" )]
 	public sealed class AvlTree<K, V> : IBinarySearchTree<K, V> where K : System.IComparable<K> {
 
 		#region nested classes
 		[System.Serializable]
+		[System.Diagnostics.DebuggerDisplay( "AvlTree = {Key}" )]
 		private sealed class EmptyAvlTree : IBinarySearchTree<K, V> {
 			private static readonly System.Int32 theHashCode;
 			static EmptyAvlTree() {
@@ -98,6 +100,16 @@ namespace Icod.Collections.Immutable {
 					return 0;
 				}
 			}
+			public IBinarySearchTree<K, V> Max {
+				get {
+					throw new System.InvalidOperationException( "Tree is empty." );
+				}
+			}
+			public IBinarySearchTree<K, V> Min {
+				get {
+					throw new System.InvalidOperationException( "Tree is empty." );
+				}
+			}
 
 			public IBinarySearchTree<K, V> Search( K key ) {
 				return this;
@@ -108,6 +120,13 @@ namespace Icod.Collections.Immutable {
 			}
 			public IBinarySearchTree<K, V> Remove( K key ) {
 				throw new System.InvalidOperationException( "Tree is empty." );
+			}
+
+			public System.Collections.Generic.IEnumerable<IBinarySearchTree<K, V>> Enumerate() {
+				return this.Inorder();
+			}
+			System.Collections.Generic.IEnumerable<IBinaryTree<V>> IBinaryTree<V>.Enumerate() {
+				return this.Inorder().Cast<IBinaryTree<V>>();
 			}
 		}
 		#endregion nested classes
@@ -124,6 +143,9 @@ namespace Icod.Collections.Immutable {
 		private readonly IBinarySearchTree<K, V> myRight;
 		private readonly System.Boolean myIsLeaf;
 		private readonly System.Int32 myHeight;
+
+		private IBinarySearchTree<K, V> myMax;
+		private IBinarySearchTree<K, V> myMin;
 		#endregion fields
 
 
@@ -141,24 +163,20 @@ namespace Icod.Collections.Immutable {
 			myHashCode = theHashCode;
 		}
 		private AvlTree( IBinarySearchTree<K, V> left, K key, V value, IBinarySearchTree<K, V> right ) : this() {
-			myLeft = left;
+			myLeft = left ?? AvlTree<K, V>.Empty;
 			myKey = key;
 			myValue = value;
-			myRight = right;
+			myRight = right ?? AvlTree<K, V>.Empty;
 			myIsLeaf = myLeft.IsEmpty && myRight.IsEmpty;
 			unchecked {
-				if ( !System.Object.ReferenceEquals( null, left ) ) {
-					myHashCode += left.GetHashCode();
-				}
+				myHashCode += myLeft.GetHashCode();
 				if ( !System.Object.ReferenceEquals( null, key ) ) {
 					myHashCode += key.GetHashCode();
 				}
 				if ( !System.Object.ReferenceEquals( null, value ) ) {
 					myHashCode += value.GetHashCode();
 				}
-				if ( !System.Object.ReferenceEquals( null, right ) ) {
-					myHashCode += right.GetHashCode();
-				}
+				myHashCode += myRight.GetHashCode();
 			}
 			myHeight = 1 + System.Math.Max( myLeft.Height, myRight.Height );
 		}
@@ -244,6 +262,31 @@ namespace Icod.Collections.Immutable {
 				return myHeight;
 			}
 		}
+
+		public IBinarySearchTree<K, V> Max {
+			get {
+				if ( null == myMax ) {
+					var probe = ( myRight.IsEmpty )
+						? this
+						: myRight.Max
+					;
+					System.Threading.Interlocked.CompareExchange<IBinarySearchTree<K, V>>( ref myMax, probe, null );
+				}
+				return myMax;
+			}
+		}
+		public IBinarySearchTree<K, V> Min {
+			get {
+				if ( null == myMin ) {
+					var probe = ( myLeft.IsEmpty )
+						? this
+						: myLeft.Min
+					;
+					System.Threading.Interlocked.CompareExchange<IBinarySearchTree<K, V>>( ref myMin, probe, null );
+				}
+				return myMin;
+			}
+		}
 		#endregion properties
 
 
@@ -284,12 +327,7 @@ namespace Icod.Collections.Immutable {
 				throw new System.ArgumentException( "A node with the same key already exists in the tree.", "key" );
 			}
 			var add = new AvlTree<K, V>( key, value );
-			if ( 0 < c ) {
-				current = new AvlTree<K, V>( current.Left, current.Key, current.Value, add );
-			} else {
-				current = new AvlTree<K, V>( add, current.Key, current.Value, current.Right );
-			}
-			stack = stack.Pop().Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( current, c ) );
+			stack = stack.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( add, 0 ) );
 			return this.RebuildFromStackFrame( stack );
 		}
 		public IBinarySearchTree<K, V> Remove( K key ) {
@@ -316,33 +354,32 @@ namespace Icod.Collections.Immutable {
 		private IStack<Pair<IBinarySearchTree<K, V>, System.Int32>> RemoveNodeFromStackFrame( IStack<Pair<IBinarySearchTree<K, V>, System.Int32>> stack ) {
 			var frame = stack.Peek();
 			var current = frame.First;
+			Pair<IBinarySearchTree<K, V>, System.Int32> output;
 			if ( current.IsLeaf ) {
-				stack = stack.Pop().Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( AvlTree<K, V>.Empty, frame.Second ) );
+				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( AvlTree<K, V>.Empty, frame.Second );
 			} else if ( current.Right.IsEmpty ) {
-				stack = stack.Pop().Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( current.Left, frame.Second ) );
+				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( current.Left, frame.Second );
 			} else if ( current.Left.IsEmpty ) {
-				stack = stack.Pop().Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( current.Right, frame.Second ) );
+				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( current.Right, frame.Second );
 			} else {
-				if ( !current.Left.Right.IsEmpty ) {
-					stack = stack.Pop().Push( new Pair<IBinarySearchTree<K, V>, System.Int32>(
-						new AvlTree<K, V>( current.Left.Left, current.Left.Key, current.Left.Value, current.Right ),
-						frame.Second
-					) );
-				} else if ( !current.Right.Left.IsEmpty ) {
-					stack = stack.Pop().Push( new Pair<IBinarySearchTree<K, V>, System.Int32>(
-						new AvlTree<K, V>( current.Left, current.Right.Key, current.Right.Value, current.Right.Right ),
-						frame.Second
-					) );
+				IBinarySearchTree<K, V> probe;
+				if ( current.Left.Right.IsEmpty ) {
+					probe = current.Left;
+					current = new AvlTree<K, V>( probe.Left, probe.Key, probe.Value, current.Right );
+				} else if ( current.Right.Left.IsEmpty ) {
+					probe = current.Right;
+					current = new AvlTree<K, V>( current.Left, probe.Key, probe.Value, probe.Right );
 				} else {
-					var right = current.Right;
-					while ( !right.Left.IsEmpty ) {
-						right = RotateRight( right );
-						right = new AvlTree<K, V>( right.Left, right.Key, right.Value, BalanceTree( right.Right ) );
-					}
-					stack = stack.Pop().Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( right, frame.Second ) );
+					probe = current.Right;
+					do {
+						probe = RotateRight( probe );
+						probe = new AvlTree<K, V>( probe.Left, probe.Key, probe.Value, BalanceTree( probe.Right ) );
+					} while ( !probe.Left.IsEmpty );
+					current = new AvlTree<K, V>( current.Left, probe.Key, probe.Value, probe.Right );
 				}
+				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( BalanceTree( current ), frame.Second );
 			}
-			return stack;
+			return stack.Pop().Push( output );
 		}
 		private IBinarySearchTree<K, V> RebuildFromStackFrame( IStack<Pair<IBinarySearchTree<K, V>, System.Int32>> stack ) {
 			Pair<IBinarySearchTree<K, V>, System.Int32> child;
@@ -357,11 +394,10 @@ namespace Icod.Collections.Immutable {
 				stack = stack.Pop();
 				probe = parent.First;
 				c = parent.Second;
-				if ( 0 < c ) {
-					result = new AvlTree<K, V>( probe.Left, probe.Key, probe.Value, child.First );
-				} else {
-					result = new AvlTree<K, V>( child.First, probe.Key, probe.Value, probe.Right );
-				}
+				result = ( 0 < c )
+					? new AvlTree<K, V>( BalanceTree( probe.Left ), probe.Key, probe.Value, BalanceTree( child.First ) )
+					: new AvlTree<K, V>( BalanceTree( child.First ), probe.Key, probe.Value, BalanceTree( probe.Right ) )
+				;
 				stack = stack.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( BalanceTree( result ), c ) );
 			}
 			return stack.Peek().First;
@@ -381,6 +417,13 @@ namespace Icod.Collections.Immutable {
 				}
 			}
 			return current;
+		}
+
+		public System.Collections.Generic.IEnumerable<IBinarySearchTree<K, V>> Enumerate() {
+			return this.Inorder();
+		}
+		System.Collections.Generic.IEnumerable<IBinaryTree<V>> IBinaryTree<V>.Enumerate() {
+			return this.Inorder().Cast<IBinaryTree<V>>();
 		}
 		#endregion methods
 

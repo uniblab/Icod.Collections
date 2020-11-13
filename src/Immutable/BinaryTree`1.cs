@@ -49,6 +49,9 @@ namespace Icod.Collections.Immutable {
 					return this;
 				}
 			}
+			public System.Collections.Generic.IEnumerable<IBinaryTree<V>> Enumerate() {
+				return this.Inorder();
+			}
 		}
 		#endregion nested classes
 
@@ -134,6 +137,10 @@ namespace Icod.Collections.Immutable {
 		#region methods
 		public sealed override System.Int32 GetHashCode() {
 			return myHashCode;
+		}
+
+		public System.Collections.Generic.IEnumerable<IBinaryTree<V>> Enumerate() {
+			return this.Inorder();
 		}
 		#endregion methods
 

@@ -14,6 +14,12 @@ namespace Icod.Collections.Immutable {
 		new IBinarySearchTree<K, V> Right {
 			get;
 		}
+		IBinarySearchTree<K, V> Max {
+			get;
+		}
+		IBinarySearchTree<K, V> Min {
+			get;
+		}
 
 		System.Int32 Height {
 			get;
@@ -23,6 +29,8 @@ namespace Icod.Collections.Immutable {
 		new IBinarySearchTree<K, V> Remove( K key );
 
 		IBinarySearchTree<K, V> Search( K key );
+
+		new System.Collections.Generic.IEnumerable<IBinarySearchTree<K, V>> Enumerate();
 
 	}
 

@@ -14,6 +14,8 @@ namespace Icod.Collections.Immutable {
 			get;
 		}
 
+		System.Collections.Generic.IEnumerable<IBinaryTree<V>> Enumerate();
+
 	}
 
 }

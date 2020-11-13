@@ -3,6 +3,8 @@
 namespace Icod.Collections.Immutable {
 
 	[System.Serializable]
+	[System.Diagnostics.DebuggerDisplay( "Deque = {Count}" )]
+
 	public sealed class Deque<T> : IDeque<T> {
 
 		#region nested classes
@@ -265,6 +267,7 @@ namespace Icod.Collections.Immutable {
 		}
 
 		[System.Serializable]
+		[System.Diagnostics.DebuggerDisplay( "Deque = {Count}" )]
 		private sealed class EmptyDeque : IDeque<T> {
 
 			private static readonly System.Int32 theHashCode;
@@ -318,6 +321,7 @@ namespace Icod.Collections.Immutable {
 		}
 
 		[System.Serializable]
+		[System.Diagnostics.DebuggerDisplay( "Deque = {Count}" )]
 		private sealed class SingleDequeue : IDeque<T> {
 			private static readonly System.Int32 theHashCode;
 			private readonly T myValue;

@@ -3,10 +3,12 @@
 namespace Icod.Collections.Immutable {
 
 	[System.Serializable]
+	[System.Diagnostics.DebuggerDisplay( "Stack = {Count}" )]
 	public sealed class Stack<T> : IStack<T> {
 
 		#region nested classes
 		[System.Serializable]
+		[System.Diagnostics.DebuggerDisplay( "Stack = {Count}" )]
 		private sealed class EmptyStack : IStack<T> {
 			private static readonly System.Int32 theHashCode;
 			static EmptyStack() {
@@ -60,6 +62,7 @@ namespace Icod.Collections.Immutable {
 		}
 
 		[System.Serializable]
+		[System.Diagnostics.DebuggerDisplay( "Stack = {Count}" )]
 		private sealed class SingleStack : IStack<T> {
 			private static readonly System.Int32 theHashCode;
 			private readonly T myValue;
