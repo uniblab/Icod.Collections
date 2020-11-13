@@ -1,4 +1,6 @@
-﻿// Copyright 2007, Eric Lippert and shamelessly stolen by Timothy J. Bruce 2020
+﻿// Copyright 2008, Eric Lippert
+// Copyright 2020, Timothy J. Bruce
+
 namespace Icod.Collections.Immutable {
 
 	public interface IStack<T> : System.Collections.Generic.IEnumerable<T>, IIsEmpty, ICountable {

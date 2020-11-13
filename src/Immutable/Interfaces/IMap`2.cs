@@ -1,4 +1,5 @@
-﻿// Copyright 2008, Eric Lippert and shamelessly stolen by Timothy J. Bruce 2020
+﻿// Copyright 2008, Eric Lippert
+// Copyright 2020, Timothy J. Bruce
 
 namespace Icod.Collections.Immutable {
 
