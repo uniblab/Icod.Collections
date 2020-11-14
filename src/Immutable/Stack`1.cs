@@ -348,7 +348,7 @@ namespace Icod.Collections.Immutable {
 			} else if ( count < 0 ) {
 				throw new System.ArgumentOutOfRangeException( "count", "count parameter may not be negative." );
 			} else if ( myShortCount < count ) {
-				throw new System.ArgumentOutOfRangeException( "count", "count parameter cannot exceed the Count of the stack." ); 
+				throw new System.ArgumentOutOfRangeException( "count", "count parameter cannot exceed the Count of the stack." );
 			} else if ( ( shift == count ) || ( 0 == ( shift % count ) ) ) {
 				return this;
 			}
@@ -360,28 +360,22 @@ namespace Icod.Collections.Immutable {
 				output = output.Pop();
 			}
 			return ( shift < 0 )
-				? Roll( buffer, output, Stack<T>.NegativeIndexer, count, shift, 0, ( index, count ) => ( index < count ), index => ++index )
-				: Roll( buffer.Reverse(), output, Stack<T>.PositiveIndexer, count, shift, count - 1, ( index, count ) => ( 0 <= index ), index => --index )
+				? Roll( buffer, output, count, -shift, 0, ( index, count ) => ( index < count ), index => ++index )
+				: Roll( buffer.Reverse(), output, count, shift, count - 1, ( index, count ) => ( 0 <= index ), index => --index )
 			;
 		}
 		#endregion methods
 
 
 		#region static methods
-		private static System.Int32 NegativeIndexer( System.Int32 index, System.Int32 shift, System.Int32 count ) {
-			return ( System.Math.Abs( index - shift ) % count );
-		}
-		private static System.Int32 PositiveIndexer( System.Int32 index, System.Int32 shift, System.Int32 count ) {
-			return ( System.Math.Abs( index + shift ) % count );
-		}
 		private static IStack<T> Roll(
-			IStack<T> buffer, IStack<T> tail, System.Func<System.Int32, System.Int32, System.Int32, System.Int32> indexer,
+			IStack<T> buffer, IStack<T> tail,
 			System.Int32 count, System.Int32 shift,
 			System.Int32 start, System.Func<System.Int32, System.Int32, System.Boolean> stop,
 			System.Func<System.Int32, System.Int32> next
 		) {
 			for ( System.Int32 i = start; stop( i, count ); i = next( i ) ) {
-				tail = tail.Push( buffer[ indexer( i, shift, count ) ] );
+				tail = tail.Push( buffer[ ( System.Math.Abs( i + shift ) % count ) ] );
 			}
 			return tail;
 		}
