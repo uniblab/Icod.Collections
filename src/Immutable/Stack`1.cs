@@ -34,11 +34,17 @@ namespace Icod.Collections.Immutable {
 					return 0L;
 				}
 			}
+			public T this[ System.Int32 index ] {
+				get {
+					throw new System.InvalidOperationException( "The stack is empty." );
+				}
+			}
+
 			public T Peek() {
-				throw new System.InvalidOperationException();
+				throw new System.InvalidOperationException( "The stack is empty." );
 			}
 			public IStack<T> Pop() {
-				throw new System.InvalidOperationException();
+				throw new System.InvalidOperationException( "The stack is empty." );
 			}
 			public IStack<T> Push( T value ) {
 				return new SingleStack( value );
@@ -48,6 +54,29 @@ namespace Icod.Collections.Immutable {
 			}
 			public IQueue<T> ToQueue() {
 				return Queue<T>.Empty;
+			}
+			public IStack<T> Dup() {
+				throw new System.InvalidOperationException( "The stack is empty." );
+			}
+			public IStack<T> Copy( System.Int32 count ) {
+				if ( count < 0 ) {
+					throw new System.ArgumentOutOfRangeException( "count", "count parameter may not be negative." );
+				} else if ( 0 == count ) {
+					return this;
+				} else {
+					throw new System.ArgumentOutOfRangeException( "count", "count parameter cannot exceed the Count of the stack." );
+				}
+			}
+			public IStack<T> Roll( System.Int32 count, System.Int32 factor ) {
+				if ( 0 == factor ) {
+					return this;
+				} else if ( 0 == count ) {
+					return this;
+				} else if ( count < 0 ) {
+					throw new System.ArgumentOutOfRangeException( "count", "count parameter may not be negative." );
+				} else {
+					throw new System.ArgumentOutOfRangeException( "count", "count parameter cannot exceed the Count of the stack." );
+				}
 			}
 
 			public sealed override System.Int32 GetHashCode() {
@@ -99,6 +128,16 @@ namespace Icod.Collections.Immutable {
 					return 1L;
 				}
 			}
+			public T this[ System.Int32 index ] {
+				get {
+					if ( 0 != index ) {
+						throw new System.IndexOutOfRangeException();
+					} else {
+						return myValue;
+					}
+				}
+			}
+
 			public T Peek() {
 				return myValue;
 			}
@@ -117,6 +156,33 @@ namespace Icod.Collections.Immutable {
 
 			public sealed override System.Int32 GetHashCode() {
 				return myHashCode;
+			}
+
+			public IStack<T> Dup() {
+				return new Stack<T>( this, myValue );
+			}
+			public IStack<T> Copy( System.Int32 count )  {
+				if ( count < 0 ) {
+					throw new System.ArgumentOutOfRangeException( "count", "count parameter may not be negative." );
+				} else if ( 0 == count ) {
+					return this;
+				} else if ( 1 < count ) {
+					throw new System.ArgumentOutOfRangeException( "count", "count parameter cannot exceed the Count of the stack." );
+				}
+				return new Stack<T>( this, myValue );
+			}
+			public IStack<T> Roll( System.Int32 count, System.Int32 factor ) {
+				if ( 0 == factor ) {
+					return this;
+				} else if ( 0 == count ) {
+					return this;
+				} else if ( count < 0 ) {
+					throw new System.ArgumentOutOfRangeException( "count", "count parameter may not be negative." );
+				} else if ( 1 < count ) {
+					throw new System.ArgumentOutOfRangeException( "count", "count parameter cannot exceed the Count of the stack." );
+				} else {
+					return this;
+				}
 			}
 
 			public System.Collections.Generic.IEnumerator<T> GetEnumerator() {
@@ -156,7 +222,7 @@ namespace Icod.Collections.Immutable {
 		private Stack( IStack<T> tail, T value ) : this() {
 			myValue = value;
 			myTail = tail ?? Stack<T>.Empty;
-			myLongCount = 1 + myTail.LongCount;
+			myLongCount = 1L + myTail.LongCount;
 			myShortCount = (System.Int32)System.Math.Min( (System.Int64)System.Int32.MaxValue, myLongCount );
 			unchecked {
 				myHashCode += myTail.GetHashCode();
@@ -188,6 +254,22 @@ namespace Icod.Collections.Immutable {
 		public System.Int64 LongCount {
 			get {
 				return myLongCount;
+			}
+		}
+
+		public T this[ System.Int32 index ] {
+			get {
+				if ( ( index < 0 ) || ( myShortCount <= index ) ) {
+					throw new System.IndexOutOfRangeException();
+				} else if ( 0 == index ) {
+					return myValue;
+				} else {
+					IStack<T> stack = this;
+					while ( 0 < index-- ) {
+						stack = stack.Pop();
+					}
+					return stack.Peek();
+				}
 			}
 		}
 		#endregion properties
@@ -232,7 +314,78 @@ namespace Icod.Collections.Immutable {
 			}
 			return output;
 		}
+
+		public IStack<T> Dup() {
+			return this.Push( this.Peek() );
+		}
+		public IStack<T> Copy( System.Int32 count ) {
+			if ( count < 0 ) {
+				throw new System.ArgumentOutOfRangeException( "count", "count parameter may not be negative." );
+			} else if ( 0 == count ) {
+				return this;
+			} else if ( 1 == count ) {
+				return new Stack<T>( this, myValue );
+			} else if ( this.Count < count ) {
+				throw new System.ArgumentOutOfRangeException( "count", "count parameter cannot exceed the Count of the stack." );
+			}
+			var buffer = Stack<T>.Empty;
+			IStack<T> probe = this;
+			while ( !probe.IsEmpty && ( 0 < count-- ) ) {
+				buffer = buffer.Push( probe.Peek() );
+				probe = probe.Pop();
+			}
+			IStack<T> output = this;
+			foreach ( var t in probe.Reverse() ) {
+				output = output.Push( t );
+			}
+			return output;
+		}
+		public IStack<T> Roll( System.Int32 count, System.Int32 shift ) {
+			if ( 0 == shift ) {
+				return this;
+			} else if ( 0 == count ) {
+				return this;
+			} else if ( count < 0 ) {
+				throw new System.ArgumentOutOfRangeException( "count", "count parameter may not be negative." );
+			} else if ( myShortCount < count ) {
+				throw new System.ArgumentOutOfRangeException( "count", "count parameter cannot exceed the Count of the stack." ); 
+			} else if ( ( shift == count ) || ( 0 == ( shift % count ) ) ) {
+				return this;
+			}
+
+			var buffer = Stack<T>.Empty;
+			IStack<T> output = this;
+			for ( System.Int32 i = 0; i < count; i++ ) {
+				buffer = buffer.Push( output.Peek() );
+				output = output.Pop();
+			}
+			return ( shift < 0 )
+				? Roll( buffer, output, Stack<T>.NegativeIndexer, count, shift, 0, ( index, count ) => ( index < count ), index => ++index )
+				: Roll( buffer.Reverse(), output, Stack<T>.PositiveIndexer, count, shift, count - 1, ( index, count ) => ( 0 <= index ), index => --index )
+			;
+		}
 		#endregion methods
+
+
+		#region static methods
+		private static System.Int32 NegativeIndexer( System.Int32 index, System.Int32 shift, System.Int32 count ) {
+			return ( System.Math.Abs( index - shift ) % count );
+		}
+		private static System.Int32 PositiveIndexer( System.Int32 index, System.Int32 shift, System.Int32 count ) {
+			return ( System.Math.Abs( index + shift ) % count );
+		}
+		private static IStack<T> Roll(
+			IStack<T> buffer, IStack<T> tail, System.Func<System.Int32, System.Int32, System.Int32, System.Int32> indexer,
+			System.Int32 count, System.Int32 shift,
+			System.Int32 start, System.Func<System.Int32, System.Int32, System.Boolean> stop,
+			System.Func<System.Int32, System.Int32> next
+		) {
+			for ( System.Int32 i = start; stop( i, count ); i = next( i ) ) {
+				tail = tail.Push( buffer[ indexer( i, shift, count ) ] );
+			}
+			return tail;
+		}
+		#endregion static methods
 
 	}
 
