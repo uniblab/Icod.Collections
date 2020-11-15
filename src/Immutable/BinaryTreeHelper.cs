@@ -16,18 +16,17 @@ namespace Icod.Collections.Immutable {
 
 			var stack = Stack<IBinaryTree<V>>.Empty.Push( tree );
 			IBinaryTree<V> current;
-			IBinaryTree<V> left;
-			IBinaryTree<V> right;
+			IBinaryTree<V> probe;
 			while ( !stack.IsEmpty ) {
 				current = stack.Peek();
 				stack = stack.Pop();
-				right = current.Right;
-				if ( !right.IsEmpty ) {
-					stack = stack.Push( right );
+				probe = current.Right;
+				if ( !probe.IsEmpty ) {
+					stack = stack.Push( probe );
 				}
-				left = current.Left;
-				if ( !left.IsEmpty ) {
-					stack = stack.Push( left );
+				probe = current.Left;
+				if ( !probe.IsEmpty ) {
+					stack = stack.Push( probe );
 				}
 				yield return current;
 			}
@@ -145,18 +144,17 @@ namespace Icod.Collections.Immutable {
 
 			var stack = Stack<IBinarySearchTree<K, V>>.Empty.Push( tree );
 			IBinarySearchTree<K, V> current;
-			IBinarySearchTree<K, V> left;
-			IBinarySearchTree<K, V> right;
+			IBinarySearchTree<K, V> probe;
 			while ( !stack.IsEmpty ) {
 				current = stack.Peek();
 				stack = stack.Pop();
-				right = current.Right;
-				if ( !right.IsEmpty ) {
-					stack = stack.Push( right );
+				probe = current.Right;
+				if ( !probe.IsEmpty ) {
+					stack = stack.Push( probe );
 				}
-				left = current.Left;
-				if ( !left.IsEmpty ) {
-					stack = stack.Push( left );
+				probe = current.Left;
+				if ( !probe.IsEmpty ) {
+					stack = stack.Push( probe );
 				}
 				yield return current;
 			}
