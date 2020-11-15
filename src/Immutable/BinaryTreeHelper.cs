@@ -118,18 +118,17 @@ namespace Icod.Collections.Immutable {
 
 			var hold = Queue<IBinaryTree<V>>.Empty.Enqueue( tree );
 			IBinaryTree<V> current;
-			IBinaryTree<V> left;
-			IBinaryTree<V> right;
+			IBinaryTree<V> probe;
 			while ( !hold.IsEmpty ) {
 				current = hold.Peek();
 				hold = hold.Dequeue();
-				left = current.Left;
-				if ( !left.IsEmpty ) {
-					hold = hold.Enqueue( left );
+				probe = current.Left;
+				if ( !probe.IsEmpty ) {
+					hold = hold.Enqueue( probe );
 				}
-				right = current.Right;
-				if ( !right.IsEmpty ) {
-					hold = hold.Enqueue( right );
+				probe = current.Right;
+				if ( !probe.IsEmpty ) {
+					hold = hold.Enqueue( probe );
 				}
 				yield return current;
 			}
@@ -248,18 +247,17 @@ namespace Icod.Collections.Immutable {
 
 			var hold = Queue<IBinarySearchTree<K, V>>.Empty.Enqueue( tree );
 			IBinarySearchTree<K, V> current;
-			IBinarySearchTree<K, V> left;
-			IBinarySearchTree<K, V> right;
+			IBinarySearchTree<K, V> probe;
 			while ( !hold.IsEmpty ) {
 				current = hold.Peek();
 				hold = hold.Dequeue();
-				left = current.Left;
-				if ( !left.IsEmpty ) {
-					hold = hold.Enqueue( left );
+				probe = current.Left;
+				if ( !probe.IsEmpty ) {
+					hold = hold.Enqueue( probe );
 				}
-				right = current.Right;
-				if ( !right.IsEmpty ) {
-					hold = hold.Enqueue( right );
+				probe = current.Right;
+				if ( !probe.IsEmpty ) {
+					hold = hold.Enqueue( probe );
 				}
 				yield return current;
 			}
