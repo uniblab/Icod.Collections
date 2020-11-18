@@ -1,4 +1,5 @@
 ﻿// Copyright 2020 Timothy J. Bruce
+// This file is licensed under the terms of the GNU LESSER GENERAL PUBLIC LICENSE, version 2.1, February 1999
 
 using System.Linq;
 
@@ -310,7 +311,7 @@ namespace Icod.Collections.Immutable {
 
 		public IBinarySearchTree<K, V> Add( K key, V value ) {
 			IBinarySearchTree<K, V> current = this;
-			var c = key.CompareTo( current.Key );
+			var c = key.CompareKeys( current.Key );
 			var stack = Stack<Pair<IBinarySearchTree<K, V>, System.Int32>>.Empty.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( current, c ) );
 			while ( ( 0 != c ) && !current.IsEmpty ) {
 				if ( 0 < c ) {
@@ -319,7 +320,7 @@ namespace Icod.Collections.Immutable {
 					current = current.Left;
 				}
 				if ( !current.IsEmpty ) {
-					c = key.CompareTo( current.Key );
+					c = key.CompareKeys( current.Key );
 					stack = stack.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( current, c ) );
 				}
 			}
@@ -328,11 +329,11 @@ namespace Icod.Collections.Immutable {
 			}
 			var add = new AvlTree<K, V>( key, value );
 			stack = stack.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( add, 0 ) );
-			return this.RebuildFromStackFrame( stack );
+			return AvlTree<K, V>.RebuildFromStackFrame( stack );
 		}
 		public IBinarySearchTree<K, V> Remove( K key ) {
 			IBinarySearchTree<K, V> current = this;
-			var c = key.CompareTo( current.Key );
+			var c = key.CompareKeys( current.Key );
 			var stack = Stack<Pair<IBinarySearchTree<K, V>, System.Int32>>.Empty.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( current, c ) );
 			while ( ( 0 != c ) && !current.IsEmpty ) {
 				if ( 0 < c ) {
@@ -341,71 +342,20 @@ namespace Icod.Collections.Immutable {
 					current = current.Left;
 				}
 				if ( !current.IsEmpty ) {
-					c = key.CompareTo( current.Key );
+					c = key.CompareKeys( current.Key );
 					stack = stack.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( current, c ) );
 				}
 			}
 			if ( current.IsEmpty ) {
 				return this;
 			}
-			stack = RemoveNodeFromStackFrame( stack );
-			return this.RebuildFromStackFrame( stack );
-		}
-		private IStack<Pair<IBinarySearchTree<K, V>, System.Int32>> RemoveNodeFromStackFrame( IStack<Pair<IBinarySearchTree<K, V>, System.Int32>> stack ) {
-			var frame = stack.Peek();
-			var current = frame.First;
-			Pair<IBinarySearchTree<K, V>, System.Int32> output;
-			if ( current.IsLeaf ) {
-				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( AvlTree<K, V>.Empty, frame.Second );
-			} else if ( current.Right.IsEmpty ) {
-				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( current.Left, frame.Second );
-			} else if ( current.Left.IsEmpty ) {
-				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( current.Right, frame.Second );
-			} else {
-				IBinarySearchTree<K, V> probe;
-				if ( current.Left.Right.IsEmpty ) {
-					probe = current.Left;
-					current = new AvlTree<K, V>( probe.Left, probe.Key, probe.Value, current.Right );
-				} else if ( current.Right.Left.IsEmpty ) {
-					probe = current.Right;
-					current = new AvlTree<K, V>( current.Left, probe.Key, probe.Value, probe.Right );
-				} else {
-					probe = current.Right;
-					do {
-						probe = RotateRight( probe );
-						probe = new AvlTree<K, V>( probe.Left, probe.Key, probe.Value, BalanceTree( probe.Right ) );
-					} while ( !probe.Left.IsEmpty );
-					current = new AvlTree<K, V>( current.Left, probe.Key, probe.Value, probe.Right );
-				}
-				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( BalanceTree( current ), frame.Second );
-			}
-			return stack.Pop().Push( output );
-		}
-		private IBinarySearchTree<K, V> RebuildFromStackFrame( IStack<Pair<IBinarySearchTree<K, V>, System.Int32>> stack ) {
-			Pair<IBinarySearchTree<K, V>, System.Int32> child;
-			Pair<IBinarySearchTree<K, V>, System.Int32> parent;
-			IBinarySearchTree<K, V> probe;
-			IBinarySearchTree<K, V> result;
-			System.Int32 c;
-			while ( 1 < stack.Count ) {
-				child = stack.Peek();
-				stack = stack.Pop();
-				parent = stack.Peek();
-				stack = stack.Pop();
-				probe = parent.First;
-				c = parent.Second;
-				result = ( 0 < c )
-					? new AvlTree<K, V>( BalanceTree( probe.Left ), probe.Key, probe.Value, BalanceTree( child.First ) )
-					: new AvlTree<K, V>( BalanceTree( child.First ), probe.Key, probe.Value, BalanceTree( probe.Right ) )
-				;
-				stack = stack.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( BalanceTree( result ), c ) );
-			}
-			return stack.Peek().First;
+			stack = AvlTree<K, V>.RemoveNodeFromStackFrame( stack );
+			return AvlTree<K, V>.RebuildFromStackFrame( stack );
 		}
 
 		public IBinarySearchTree<K, V> Search( K key ) {
 			IBinarySearchTree<K, V> current = this;
-			var c = key.CompareTo( current.Key );
+			var c = key.CompareKeys( current.Key );
 			while ( ( 0 != c ) && !current.IsEmpty ) {
 				if ( 0 < c ) {
 					current = current.Right;
@@ -413,7 +363,7 @@ namespace Icod.Collections.Immutable {
 					current = current.Left;
 				}
 				if ( !current.IsEmpty ) {
-					c = key.CompareTo( current.Key );
+					c = key.CompareKeys( current.Key );
 				}
 			}
 			return current;
@@ -474,6 +424,58 @@ namespace Icod.Collections.Immutable {
 			) );
 		}
 
+
+		private static IStack<Pair<IBinarySearchTree<K, V>, System.Int32>> RemoveNodeFromStackFrame( IStack<Pair<IBinarySearchTree<K, V>, System.Int32>> stack ) {
+			var frame = stack.Peek();
+			var current = frame.First;
+			Pair<IBinarySearchTree<K, V>, System.Int32> output;
+			if ( current.IsLeaf ) {
+				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( AvlTree<K, V>.Empty, frame.Second );
+			} else if ( current.Right.IsEmpty ) {
+				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( current.Left, frame.Second );
+			} else if ( current.Left.IsEmpty ) {
+				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( current.Right, frame.Second );
+			} else {
+				IBinarySearchTree<K, V> probe;
+				if ( current.Left.Right.IsEmpty ) {
+					probe = current.Left;
+					current = new AvlTree<K, V>( probe.Left, probe.Key, probe.Value, current.Right );
+				} else if ( current.Right.Left.IsEmpty ) {
+					probe = current.Right;
+					current = new AvlTree<K, V>( current.Left, probe.Key, probe.Value, probe.Right );
+				} else {
+					probe = current.Right;
+					do {
+						probe = RotateRight( probe );
+						probe = new AvlTree<K, V>( probe.Left, probe.Key, probe.Value, BalanceTree( probe.Right ) );
+					} while ( !probe.Left.IsEmpty );
+					current = new AvlTree<K, V>( current.Left, probe.Key, probe.Value, probe.Right );
+				}
+				output = new Pair<IBinarySearchTree<K, V>, System.Int32>( BalanceTree( current ), frame.Second );
+			}
+			return stack.Pop().Push( output );
+		}
+		private static IBinarySearchTree<K, V> RebuildFromStackFrame( IStack<Pair<IBinarySearchTree<K, V>, System.Int32>> stack ) {
+			Pair<IBinarySearchTree<K, V>, System.Int32> child;
+			Pair<IBinarySearchTree<K, V>, System.Int32> parent;
+			IBinarySearchTree<K, V> probe;
+			IBinarySearchTree<K, V> result;
+			System.Int32 c;
+			while ( 1 < stack.Count ) {
+				child = stack.Peek();
+				stack = stack.Pop();
+				parent = stack.Peek();
+				stack = stack.Pop();
+				probe = parent.First;
+				c = parent.Second;
+				result = ( 0 < c )
+					? new AvlTree<K, V>( BalanceTree( probe.Left ), probe.Key, probe.Value, BalanceTree( child.First ) )
+					: new AvlTree<K, V>( BalanceTree( child.First ), probe.Key, probe.Value, BalanceTree( probe.Right ) )
+				;
+				stack = stack.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( BalanceTree( result ), c ) );
+			}
+			return stack.Peek().First;
+		}
 
 		public static System.Int32 GetBalanceFactor( IBinarySearchTree<K, V> tree ) {
 			return tree.IsEmpty
