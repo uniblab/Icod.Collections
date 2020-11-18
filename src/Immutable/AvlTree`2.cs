@@ -72,12 +72,12 @@ namespace Icod.Collections.Immutable {
 			}
 			IBinaryTree<V> IBinaryTree<V>.Left {
 				get {
-					return this;
+					throw new System.InvalidOperationException( "Tree is empty." );
 				}
 			}
 			IBinaryTree<V> IBinaryTree<V>.Right {
 				get {
-					return this;
+					throw new System.InvalidOperationException( "Tree is empty." );
 				}
 			}
 
@@ -144,9 +144,6 @@ namespace Icod.Collections.Immutable {
 		private readonly IBinarySearchTree<K, V> myRight;
 		private readonly System.Boolean myIsLeaf;
 		private readonly System.Int32 myHeight;
-
-		private IBinarySearchTree<K, V> myMax;
-		private IBinarySearchTree<K, V> myMin;
 		#endregion fields
 
 
@@ -266,32 +263,29 @@ namespace Icod.Collections.Immutable {
 
 		public IBinarySearchTree<K, V> Max {
 			get {
-				if ( null == myMax ) {
-					var probe = ( myRight.IsEmpty )
-						? this
-						: myRight.Max
-					;
-					System.Threading.Interlocked.CompareExchange<IBinarySearchTree<K, V>>( ref myMax, probe, null );
+				IBinarySearchTree<K, V> max = this;
+				while ( !max.Right.IsEmpty ) {
+					max = max.Right;
 				}
-				return myMax;
+				return max;
 			}
 		}
 		public IBinarySearchTree<K, V> Min {
 			get {
-				if ( null == myMin ) {
-					var probe = ( myLeft.IsEmpty )
-						? this
-						: myLeft.Min
-					;
-					System.Threading.Interlocked.CompareExchange<IBinarySearchTree<K, V>>( ref myMin, probe, null );
+				IBinarySearchTree<K, V> min = this;
+				while ( !min.Left.IsEmpty ) {
+					min = min.Left;
 				}
-				return myMin;
+				return min;
 			}
 		}
 		#endregion properties
 
 
 		#region methods
+		public sealed override System.Int32 GetHashCode() {
+			return myHashCode;
+		}
 		public System.Boolean Contains( K key ) {
 			return !this.Search( key ).IsEmpty;
 		}
