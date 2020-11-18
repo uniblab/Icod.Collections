@@ -365,6 +365,10 @@ namespace Icod.Collections.Immutable {
 				: Roll( buffer.Reverse(), output, count, shift, count - 1, ( index, count ) => ( 0 <= index ), index => --index )
 			;
 		}
+
+		public sealed override System.Int32 GetHashCode() {
+			return myHashCode;
+		}
 		#endregion methods
 
 

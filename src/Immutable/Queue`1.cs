@@ -158,7 +158,7 @@ namespace Icod.Collections.Immutable {
 			myHashCode = theHashCode;
 		}
 		internal Queue( IStack<T> drain, IStack<T> source ) : this() {
-			source = source ?? Stack<T>.Empty;
+			source ??= Stack<T>.Empty;
 			if ( ( drain ?? Stack<T>.Empty ).IsEmpty ) {
 				drain = source.Reverse();
 				source = Stack<T>.Empty;

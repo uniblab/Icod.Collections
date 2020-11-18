@@ -346,7 +346,7 @@ namespace Icod.Collections.Immutable {
 				}
 			}
 			public sealed override System.Int32 GetHashCode() {
-				return theHashCode;
+				return myHashCode;
 			}
 
 			public System.Boolean IsEmpty {
