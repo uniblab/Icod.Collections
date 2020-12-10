@@ -308,11 +308,10 @@ namespace Icod.Collections.Immutable {
 			var c = key.CompareKeys( current.Key );
 			var stack = Stack<Pair<IBinarySearchTree<K, V>, System.Int32>>.Empty.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( current, c ) );
 			while ( ( 0 != c ) && !current.IsEmpty ) {
-				if ( 0 < c ) {
-					current = current.Right;
-				} else {
-					current = current.Left;
-				}
+				current = ( 0 < c )
+					? current.Right
+					: current.Left
+				;
 				if ( !current.IsEmpty ) {
 					c = key.CompareKeys( current.Key );
 					stack = stack.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( current, c ) );
@@ -330,11 +329,10 @@ namespace Icod.Collections.Immutable {
 			var c = key.CompareKeys( current.Key );
 			var stack = Stack<Pair<IBinarySearchTree<K, V>, System.Int32>>.Empty.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( current, c ) );
 			while ( ( 0 != c ) && !current.IsEmpty ) {
-				if ( 0 < c ) {
-					current = current.Right;
-				} else {
-					current = current.Left;
-				}
+				current = ( 0 < c )
+					? current.Right
+					: current.Left
+				;
 				if ( !current.IsEmpty ) {
 					c = key.CompareKeys( current.Key );
 					stack = stack.Push( new Pair<IBinarySearchTree<K, V>, System.Int32>( current, c ) );
@@ -351,11 +349,10 @@ namespace Icod.Collections.Immutable {
 			IBinarySearchTree<K, V> current = this;
 			var c = key.CompareKeys( current.Key );
 			while ( ( 0 != c ) && !current.IsEmpty ) {
-				if ( 0 < c ) {
-					current = current.Right;
-				} else {
-					current = current.Left;
-				}
+				current = ( 0 < c )
+					? current.Right
+					: current.Left
+				;
 				if ( !current.IsEmpty ) {
 					c = key.CompareKeys( current.Key );
 				}
